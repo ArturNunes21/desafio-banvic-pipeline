@@ -1,0 +1,26 @@
+# values.yaml
+airflowVersion: "2.11.0"
+webserverSecretKey: "chave_secreta_fixa_banvic_2026" # <-- Linha nova adicionada
+
+images:
+  airflow:
+    repository: banvic-airflow-custom
+    tag: v9
+    pullPolicy: Never
+
+# ... restante do arquivo continua igual ...
+
+executor: "LocalExecutor"
+
+postgresql:
+  enabled: true
+
+dags:
+  persistence:
+    enabled: false
+
+scheduler:
+  enabled: true
+
+webserver:
+  enabled: true

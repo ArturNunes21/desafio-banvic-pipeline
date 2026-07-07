@@ -1,0 +1,6 @@
+# Data Analysis and Exploration
+pandas
+sqlalchemy
+psycopg2-binary
+matplotlib
+jupyter
