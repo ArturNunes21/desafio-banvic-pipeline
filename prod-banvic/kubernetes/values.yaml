@@ -1,0 +1,24 @@
+# values.yaml
+airflowVersion: "2.11.0"
+webserverSecretKey: "chave_secreta_fixa_banvic_2026"
+
+images:
+  airflow:
+    repository: banvic-airflow-custom
+    tag: v15
+    pullPolicy: Never
+
+executor: "LocalExecutor"
+
+postgresql:
+  enabled: true
+
+dags:
+  persistence:
+    enabled: false
+
+scheduler:
+  enabled: true
+
+webserver:
+  enabled: true
