@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: banvic_raw
+    schema: public  # Onde o Meltano salvou os dados
+    tables:
+      - name: agencias
+      - name: clientes
+      - name: contas
+      - name: colaboradores
+      - name: colaborador_agencia
+      - name: propostas_credito
+      - name: transacoes
