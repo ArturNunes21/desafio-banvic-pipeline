@@ -5,7 +5,7 @@ webserverSecretKey: "chave_secreta_fixa_banvic_2026"
 images:
   airflow:
     repository: banvic-airflow-custom
-    tag: v15
+    tag: v18
     pullPolicy: Never
 
 executor: "LocalExecutor"

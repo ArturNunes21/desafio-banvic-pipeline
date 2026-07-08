@@ -12,17 +12,16 @@ A arquitetura desta solução foi desenhada para ser moderna, escalável e repli
 
 *   **Conteinerização e IaC:** O ambiente é totalmente gerenciado por `Docker` e `Kubernetes` (usando `Kind` para o cluster local) e provisionado via `Helm`. Isso garante que qualquer pessoa possa replicar a infraestrutura de forma idêntica.
 *   **Orquestração:** O `Apache Airflow` é o orquestrador central, responsável por agendar, executar e monitorar os pipelines de dados.
-*   **Ingestão de Dados (ELT):** O `Meltano` foi escolhido como a ferramenta de ELT para extrair dados de diversas fontes (neste caso, arquivos CSV) e carregá-los em um destino centralizado.
+*   **Ingestão de Dados (EL):** O `Meltano` foi escolhido como a ferramenta de EL para extrair dados de diversas fontes (neste caso, arquivos CSV) e carregá-los em um destino centralizado.
 *   **Armazenamento:** O `PostgreSQL` é utilizado como Data Warehouse para armazenar os dados brutos e prepará-los para análise.
 
-## 2. Estratégia de Ingestão
+## 2. Estratégia de Ingestão (EL)
 
-A estratégia de ingestão segue o paradigma **ELT (Extract, Load, Transform)**:
+A estratégia de ingestão segue o paradigma **EL (Extract, Load)**:
 
-1.  **Extract & Load:** O Meltano, através do `tap-csv`, extrai os dados dos arquivos `.csv` localizados no diretório `data/raw/`. Em seguida, o `target-postgres` carrega esses dados diretamente em um schema no banco de dados PostgreSQL. Esta etapa é orquestrada pela DAG `pipeline_ingestao_banvic` no Airflow.
-2.  **Transform:** As transformações dos dados (limpeza, modelagem, enriquecimento) não fazem parte do escopo inicial de ingestão e devem ser realizadas posteriormente, utilizando ferramentas como dbt, Pandas ou Spark, criando tabelas modeladas e prontas para o consumo pela área de negócios.
+1.  **Extract & Load:** O Meltano, através do `tap-csv`, extrai os dados dos 7 arquivos `.csv` brutos localizados no diretório `data/raw/`. Em seguida, o `target-postgres` carrega esses dados diretamente em um schema no banco de dados PostgreSQL. O objetivo é disponibilizar as 7 tabelas brutas de forma confiável para consumo. Esta etapa é orquestrada pela DAG `pipeline_ingestao_banvic` no Airflow.
 
-Este processo garante que os dados brutos estejam sempre disponíveis no Data Warehouse para auditoria e reprocessamento, se necessário.
+Este processo garante que os dados brutos estejam sempre disponíveis no Data Warehouse para auditoria e reprocessamento, se necessário. Qualquer transformação, modelagem ou enriquecimento de dados será responsabilidade de camadas analíticas subsequentes, utilizando as tabelas brutas disponibilizadas.
 
 ## 3. Como Executar o Projeto Localmente
 
@@ -61,16 +60,17 @@ Siga os passos abaixo para configurar e executar o ambiente e o pipeline de dado
     ```
 
 5.  **Configure as Variáveis de Ambiente**
-    Crie um arquivo `.env` na raiz do projeto. O Meltano e o Airflow o utilizarão para configurar a conexão com o banco de dados.
-    ```env
-    # Credenciais para o PostgreSQL
-    DB_HOST=airflow-postgresql
-    DB_PORT=5432
-    DB_USER=postgres
-    DB_PASSWORD=postgres
-    DB_DATABASE=postgres
+    Crie um arquivo `.env` na raiz do projeto para configurar a conexão com o banco de dados. Este arquivo é ignorado pelo Git (`.gitignore`) para proteger suas credenciais.
+
+    O arquivo deve conter as seguintes variáveis:
     ```
-    **(Observação: Estas são credenciais de desenvolvimento. Em um ambiente de produção, use senhas fortes e um sistema de gerenciamento de segredos.)**
+    DB_HOST
+    DB_PORT
+    DB_USER
+    DB_PASSWORD
+    DB_DATABASE
+    ```
+    **(Observação: Para este projeto, os valores padrão para a instância do PostgreSQL criada pelo Helm do Airflow são geralmente `airflow-postgresql`, `5432`, `postgres`, `postgres` e `postgres`, respectivamente. Em um ambiente de produção real, use senhas fortes e um sistema de gerenciamento de segredos.)**
 
 6.  **Instale e Configure o Airflow com Helm**
     Navegue até o diretório do Kubernetes e atualize a imagem no `values.yaml` se necessário.

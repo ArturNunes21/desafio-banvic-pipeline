@@ -7,12 +7,6 @@ runaway_limit = 10
 ignore_templated_areas = true
 sql_file_exts = .sql
 
-[sqlfluff:templater:dbt]
-apply_dbt_builtins = true
-project_dir = ./
-profiles_dir = ~/.dbt/
-profile = transform
-
 [sqlfluff:indentation]
 indent_unit = space
 tab_space_size = 4
