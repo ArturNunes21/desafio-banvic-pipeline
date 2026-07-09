@@ -25,14 +25,13 @@ env:
     value: "postgres"
   - name: DB_DATABASE
     value: "postgres"
-  - name: DB_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: banvic-secrets
-        key: db-password
+  - name: TARGET_POSTGRES_DEFAULT_TARGET_SCHEMA
+    value: "raw_banvic"
 
-# Conexão postgres_default da DAG — lida do Secret (sem senha no código)
 secret:
+  - envName: DB_PASSWORD
+    secretName: banvic-secrets
+    secretKey: db-password
   - envName: AIRFLOW_CONN_POSTGRES_DEFAULT
     secretName: banvic-secrets
     secretKey: airflow-conn-postgres-default

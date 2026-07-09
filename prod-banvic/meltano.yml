@@ -42,4 +42,4 @@ plugins:
       user: $DB_USER
       password: $DB_PASSWORD
       database: $DB_DATABASE
-      schema: raw_banvic
+      default_target_schema: raw_banvic
