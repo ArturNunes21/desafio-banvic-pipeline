@@ -37,9 +37,9 @@ plugins:
     variant: meltanolabs
     pip_url: git+https://github.com/MeltanoLabs/target-postgres.git
     config:
-      host: airflow-postgresql
-      port: 5432
-      user: postgres
-      password: postgres
-      database: postgres
-      schema: public
+      host: $DB_HOST
+      port: $DB_PORT
+      user: $DB_USER
+      password: $DB_PASSWORD
+      database: $DB_DATABASE
+      schema: raw_banvic

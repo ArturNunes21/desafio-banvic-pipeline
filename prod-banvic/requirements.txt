@@ -1,7 +1,3 @@
-# Data Analysis and Exploration
-pandas
-sqlalchemy
-psycopg2-binary
-matplotlib
-jupyter
-sqlfluff
+# Dependências do pipeline de ingestão (EL)
+apache-airflow-providers-postgres
+meltano

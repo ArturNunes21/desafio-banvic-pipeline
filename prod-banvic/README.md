@@ -4,9 +4,14 @@ Este projeto é uma Prova de Conceito (PoC) para a certificação de Engenharia 
 
 ## 1. Arquitetura da Solução
 
-**(Observação: Substitua a URL abaixo pela URL da imagem do seu diagrama de arquitetura. Você pode fazer o upload do diagrama no seu repositório GitHub e usar o link aqui.)**
+![Arquitetura do Projeto](docs/diagrama-arquitetura.svg)
 
-![Arquitetura do Projeto](https://via.placeholder.com/800x400.png?text=Insira+o+Diagrama+da+Arquitetura+Aqui)
+O diagrama acima representa o fluxo completo da solução:
+
+1. **Fonte:** 7 arquivos CSV do ERP simulado em `data/raw/`.
+2. **Orquestração:** a DAG `pipeline_ingestao_banvic` no Apache Airflow valida a presença dos arquivos (FileSensors), limpa as tabelas de destino e dispara o Meltano.
+3. **Ingestão (EL):** o Meltano extrai via `tap-csv` e carrega via `target-postgres`.
+4. **Destino:** PostgreSQL armazena as 7 tabelas brutas para consumo por analistas.
 
 A arquitetura desta solução foi desenhada para ser moderna, escalável e replicável, utilizando ferramentas de código aberto amplamente adotadas no mercado de engenharia de dados.
 
@@ -19,7 +24,7 @@ A arquitetura desta solução foi desenhada para ser moderna, escalável e repli
 
 A estratégia de ingestão segue o paradigma **EL (Extract, Load)**:
 
-1.  **Extract & Load:** O Meltano, através do `tap-csv`, extrai os dados dos 7 arquivos `.csv` brutos localizados no diretório `data/raw/`. Em seguida, o `target-postgres` carrega esses dados diretamente em um schema no banco de dados PostgreSQL. O objetivo é disponibilizar as 7 tabelas brutas de forma confiável para consumo. Esta etapa é orquestrada pela DAG `pipeline_ingestao_banvic` no Airflow.
+1.  **Extract & Load:** O Meltano, através do `tap-csv`, extrai os dados dos 7 arquivos `.csv` brutos localizados no diretório `data/raw/`. Em seguida, o `target-postgres` carrega esses dados no schema `raw_banvic` do PostgreSQL. O objetivo é disponibilizar as 7 tabelas brutas de forma confiável para consumo. Esta etapa é orquestrada pela DAG `pipeline_ingestao_banvic` no Airflow.
 
 Este processo garante que os dados brutos estejam sempre disponíveis no Data Warehouse para auditoria e reprocessamento, se necessário. Qualquer transformação, modelagem ou enriquecimento de dados será responsabilidade de camadas analíticas subsequentes, utilizando as tabelas brutas disponibilizadas.
 
@@ -49,7 +54,7 @@ Siga os passos abaixo para configurar e executar o ambiente e o pipeline de dado
     ```
 
 3.  **Construa a Imagem Docker Personalizada**
-    A imagem customizada do Airflow inclui o projeto Meltano.
+    A imagem customizada inclui o Airflow, o Meltano (com plugins já instalados) e os dados CSV empacotados em `data/raw/`. Não é necessário volume persistente — tudo roda a partir da imagem.
     ```bash
     docker build -t banvic-airflow-custom:v1 .
     ```
@@ -59,18 +64,38 @@ Siga os passos abaixo para configurar e executar o ambiente e o pipeline de dado
     kind load docker-image banvic-airflow-custom:v1 --name banvic-cluster
     ```
 
-5.  **Configure as Variáveis de Ambiente**
-    Crie um arquivo `.env` na raiz do projeto para configurar a conexão com o banco de dados. Este arquivo é ignorado pelo Git (`.gitignore`) para proteger suas credenciais.
+5.  **Configure as Variáveis de Ambiente e Secrets**
 
-    O arquivo deve conter as seguintes variáveis:
+    **Desenvolvimento local / Meltano:** copie o template e preencha os valores:
+
+    ```bash
+    cp .env.example .env
     ```
-    DB_HOST
-    DB_PORT
-    DB_USER
-    DB_PASSWORD
-    DB_DATABASE
+
+    O arquivo `.env` é ignorado pelo Git. Variáveis necessárias:
+
+    | Variável | Descrição |
+    |----------|-----------|
+    | `DB_HOST` | Host do PostgreSQL (`airflow-postgresql` no cluster) |
+    | `DB_PORT` | Porta (`5432`) |
+    | `DB_USER` | Usuário do banco |
+    | `DB_PASSWORD` | Senha do banco |
+    | `DB_DATABASE` | Nome do banco |
+    | `WEBSERVER_SECRET_KEY` | Chave Flask do Airflow Webserver |
+    | `AIRFLOW_CONN_POSTGRES_DEFAULT` | URI da conexão Airflow (mesma senha de `DB_PASSWORD`) |
+
+    Valores padrão para o PostgreSQL do Helm: `airflow-postgresql`, `5432`, `postgres`, `postgres`, `postgres`.
+
+    **Kubernetes:** antes do Helm install, crie o Secret a partir do template:
+
+    ```bash
+    cd kubernetes
+    cp banvic-secrets.example.yaml banvic-secrets.yaml
+    # Edite banvic-secrets.yaml com suas credenciais
+    kubectl apply -f banvic-secrets.yaml
     ```
-    **(Observação: Para este projeto, os valores padrão para a instância do PostgreSQL criada pelo Helm do Airflow são geralmente `airflow-postgresql`, `5432`, `postgres`, `postgres` e `postgres`, respectivamente. Em um ambiente de produção real, use senhas fortes e um sistema de gerenciamento de segredos.)**
+
+    O [`meltano.yml`](meltano.yml) lê `$DB_HOST`, `$DB_PASSWORD`, etc. dos pods do Airflow. Nenhuma credencial fica hardcoded no código versionado.
 
 6.  **Instale e Configure o Airflow com Helm**
     Navegue até o diretório do Kubernetes e atualize a imagem no `values.yaml` se necessário.
@@ -78,6 +103,7 @@ Siga os passos abaixo para configurar e executar o ambiente e o pipeline de dado
     cd kubernetes
     helm upgrade --install airflow apache-airflow/airflow -n airflow --create-namespace -f values.yaml
     ```
+    O arquivo [`kubernetes/values.yaml`](kubernetes/values.yaml) injeta as variáveis `DB_*` nos pods e carrega a conexão `postgres_default` e a chave do Webserver a partir do Secret `banvic-secrets`. Não é necessário criar a conexão manualmente na UI do Airflow.
 
 7.  **Acesse a UI do Airflow**
     Aguarde os pods ficarem no estado "Running".
@@ -94,11 +120,42 @@ Siga os passos abaixo para configurar e executar o ambiente e o pipeline de dado
     Na UI do Airflow, ative e dispare a DAG `pipeline_ingestao_banvic`. Verifique os logs para confirmar que a execução foi bem-sucedida.
 
 9.  **Verifique os Dados no PostgreSQL**
-    Você pode se conectar ao banco de dados para verificar se as tabelas foram criadas e populadas.
+    Você pode se conectar ao banco de dados para verificar se as tabelas foram criadas e populadas no schema `raw_banvic`.
     ```bash
     # Encaminha a porta do PostgreSQL
     kubectl port-forward svc/airflow-postgresql 5432:5432 -n airflow
     
     # Agora, conecte-se usando sua ferramenta de banco de dados preferida
     # Host: localhost, Port: 5432, User/Pass: postgres/postgres
+    # Schema: raw_banvic
     ```
+
+## 4. Monitoramento e Resiliência
+
+O pipeline implementa estratégias básicas de monitoramento e tratamento de falhas:
+
+### Resiliência (Airflow)
+
+| Mecanismo | Configuração | Onde |
+|-----------|--------------|------|
+| Retries | 2 tentativas | `default_args` da DAG |
+| Retry delay | 5 minutos entre tentativas | `default_args` da DAG |
+| Idempotência | `DROP TABLE IF EXISTS` no schema `raw_banvic` antes de cada carga | task `limpar_tabelas_brutas` |
+| Validação de fonte | 7 FileSensors aguardam os CSVs | TaskGroup `validar_arquivos_csv` |
+
+### Monitoramento
+
+1. **UI do Airflow** — acompanhe o status das tasks (verde/vermelho), duração e histórico de execuções em `http://localhost:8888`.
+2. **Logs das tasks** — clique em cada task na UI e abra "Log" para ver saída do Meltano e erros de conexão.
+3. **Saúde dos pods** — verifique se todos os pods estão `Running`:
+   ```bash
+   kubectl get pods -n airflow
+   kubectl logs -n airflow <nome-do-pod-scheduler> --tail=50
+   ```
+4. **Validação dos dados** — após execução bem-sucedida, confira contagens no PostgreSQL:
+   ```sql
+   SELECT table_name FROM information_schema.tables
+   WHERE table_schema = 'raw_banvic' ORDER BY table_name;
+   ```
+
+Em caso de falha persistente após todas as retries, investigue os logs da task que falhou (sensor, limpeza ou Meltano) antes de reexecutar a DAG.

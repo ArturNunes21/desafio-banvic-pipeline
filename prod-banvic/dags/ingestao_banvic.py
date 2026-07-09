@@ -41,19 +41,20 @@ with DAG(
         task_id='limpar_tabelas_brutas',
         conn_id='postgres_default',
         sql="""
-        DROP TABLE IF EXISTS public.agencias CASCADE;
-        DROP TABLE IF EXISTS public.clientes CASCADE;
-        DROP TABLE IF EXISTS public.colaborador_agencia CASCADE;
-        DROP TABLE IF EXISTS public.colaboradores CASCADE;
-        DROP TABLE IF EXISTS public.contas CASCADE;
-        DROP TABLE IF EXISTS public.propostas_credito CASCADE;
-        DROP TABLE IF EXISTS public.transacoes CASCADE;
+        CREATE SCHEMA IF NOT EXISTS raw_banvic;
+        DROP TABLE IF EXISTS raw_banvic.agencias CASCADE;
+        DROP TABLE IF EXISTS raw_banvic.clientes CASCADE;
+        DROP TABLE IF EXISTS raw_banvic.colaborador_agencia CASCADE;
+        DROP TABLE IF EXISTS raw_banvic.colaboradores CASCADE;
+        DROP TABLE IF EXISTS raw_banvic.contas CASCADE;
+        DROP TABLE IF EXISTS raw_banvic.propostas_credito CASCADE;
+        DROP TABLE IF EXISTS raw_banvic.transacoes CASCADE;
         """,
     )
 
     executar_meltano = BashOperator(
         task_id='executar_meltano_elt',
-        bash_command='cd /opt/airflow/prod-banvic && /home/airflow/meltano_env/bin/meltano install && /home/airflow/meltano_env/bin/meltano run tap-csv target-postgres',
+        bash_command='cd /opt/airflow/prod-banvic && /home/airflow/meltano_env/bin/meltano run tap-csv target-postgres',
     )
     
     sensor_group >> limpar_tabelas_postgres >> executar_meltano

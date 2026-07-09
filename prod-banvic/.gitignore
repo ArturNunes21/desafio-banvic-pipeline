@@ -2,6 +2,9 @@
 /.meltano
 /venv
 .env
+.env.*
+!.env.example
+/kubernetes/banvic-secrets.yaml
 /output/*
 !/output/.gitignore
 /data/raw/banvic_data2026.zip

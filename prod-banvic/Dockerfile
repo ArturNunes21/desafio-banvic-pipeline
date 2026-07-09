@@ -18,3 +18,6 @@ RUN pip install --no-cache-dir apache-airflow-providers-postgres
 
 COPY --chown=airflow:root dags/ /opt/airflow/dags/
 COPY --chown=airflow:root . /opt/airflow/prod-banvic/
+
+WORKDIR /opt/airflow/prod-banvic
+RUN /home/airflow/meltano_env/bin/meltano install
