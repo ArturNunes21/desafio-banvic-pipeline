@@ -1,17 +1,40 @@
 # values.yaml
 airflowVersion: "2.11.0"
-webserverSecretKey: "chave_secreta_fixa_banvic_2026"
 
 images:
   airflow:
     repository: banvic-airflow-custom
-    tag: v15
+    tag: v1
     pullPolicy: Never
 
 executor: "LocalExecutor"
 
 postgresql:
   enabled: true
+
+# Secret do Webserver (chave Flask) — ver banvic-secrets.example.yaml
+webserverSecretKeySecretName: banvic-secrets
+
+# Variáveis para o Meltano (herdadas pelos pods do Airflow)
+env:
+  - name: DB_HOST
+    value: "airflow-postgresql"
+  - name: DB_PORT
+    value: "5432"
+  - name: DB_USER
+    value: "postgres"
+  - name: DB_DATABASE
+    value: "postgres"
+  - name: TARGET_POSTGRES_DEFAULT_TARGET_SCHEMA
+    value: "raw_banvic"
+
+secret:
+  - envName: DB_PASSWORD
+    secretName: banvic-secrets
+    secretKey: db-password
+  - envName: AIRFLOW_CONN_POSTGRES_DEFAULT
+    secretName: banvic-secrets
+    secretKey: airflow-conn-postgres-default
 
 dags:
   persistence:

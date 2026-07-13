@@ -37,9 +37,9 @@ plugins:
     variant: meltanolabs
     pip_url: git+https://github.com/MeltanoLabs/target-postgres.git
     config:
-      host: !ENV DB_HOST
-      port: !ENV DB_PORT
-      user: !ENV DB_USER
-      password: !ENV DB_PASSWORD
-      database: !ENV DB_DATABASE
-      schema: public
+      host: $DB_HOST
+      port: $DB_PORT
+      user: $DB_USER
+      password: $DB_PASSWORD
+      database: $DB_DATABASE
+      default_target_schema: raw_banvic

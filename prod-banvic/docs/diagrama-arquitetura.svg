@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#475569"/>
+    </marker>
+    <linearGradient id="infraGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f1f5f9"/>
+      <stop offset="100%" style="stop-color:#e2e8f0"/>
+    </linearGradient>
+    <linearGradient id="airflowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#dbeafe"/>
+      <stop offset="100%" style="stop-color:#bfdbfe"/>
+    </linearGradient>
+    <linearGradient id="meltanoGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fef3c7"/>
+      <stop offset="100%" style="stop-color:#fde68a"/>
+    </linearGradient>
+    <linearGradient id="pgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#d1fae5"/>
+      <stop offset="100%" style="stop-color:#a7f3d0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Title -->
+  <text x="480" y="32" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">
+    Arquitetura de Dados - BanVic (PoC)
+  </text>
+  <text x="480" y="52" text-anchor="middle" font-size="12" fill="#64748b">
+    Pipeline EL: CSV -&gt; Meltano -&gt; PostgreSQL | Orquestrado por Apache Airflow em Kubernetes
+  </text>
+
+  <!-- Infrastructure layer -->
+  <rect x="20" y="70" width="920" height="430" rx="12" fill="url(#infraGrad)" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="40" y="95" font-size="13" font-weight="600" fill="#475569">Kind Cluster (Kubernetes local) - namespace: airflow</text>
+
+  <!-- Helm + Docker badges -->
+  <rect x="40" y="110" width="100" height="28" rx="6" fill="#fff" stroke="#cbd5e1"/>
+  <text x="90" y="129" text-anchor="middle" font-size="11" font-weight="600" fill="#334155">Helm Chart</text>
+  <rect x="150" y="110" width="100" height="28" rx="6" fill="#fff" stroke="#cbd5e1"/>
+  <text x="200" y="129" text-anchor="middle" font-size="11" font-weight="600" fill="#334155">Docker Image</text>
+  <text x="270" y="129" font-size="10" fill="#64748b">banvic-airflow-custom (+ Meltano)</text>
+
+  <!-- Data Source -->
+  <rect x="40" y="160" width="200" height="300" rx="10" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="140" y="185" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Fonte de Dados</text>
+  <text x="140" y="203" text-anchor="middle" font-size="11" fill="#64748b">ERP simulado (CSV)</text>
+  <rect x="55" y="218" width="170" height="22" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="140" y="233" text-anchor="middle" font-size="10" fill="#334155">data/raw/agencias.csv</text>
+  <rect x="55" y="246" width="170" height="22" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="140" y="261" text-anchor="middle" font-size="10" fill="#334155">data/raw/clientes.csv</text>
+  <rect x="55" y="274" width="170" height="22" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="140" y="289" text-anchor="middle" font-size="10" fill="#334155">data/raw/colaboradores.csv</text>
+  <rect x="55" y="302" width="170" height="22" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="140" y="317" text-anchor="middle" font-size="10" fill="#334155">data/raw/colaborador_agencia.csv</text>
+  <rect x="55" y="330" width="170" height="22" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="140" y="345" text-anchor="middle" font-size="10" fill="#334155">data/raw/contas.csv</text>
+  <rect x="55" y="358" width="170" height="22" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="140" y="373" text-anchor="middle" font-size="10" fill="#334155">data/raw/propostas_credito.csv</text>
+  <rect x="55" y="386" width="170" height="22" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="140" y="401" text-anchor="middle" font-size="10" fill="#334155">data/raw/transacoes.csv</text>
+  <text x="140" y="445" text-anchor="middle" font-size="10" fill="#64748b">7 tabelas ERP</text>
+
+  <!-- Airflow -->
+  <rect x="280" y="160" width="360" height="300" rx="10" fill="url(#airflowGrad)" stroke="#3b82f6" stroke-width="2"/>
+  <text x="460" y="185" text-anchor="middle" font-size="14" font-weight="700" fill="#1e40af">Apache Airflow</text>
+  <text x="460" y="203" text-anchor="middle" font-size="11" fill="#1d4ed8">DAG: pipeline_ingestao_banvic</text>
+
+  <!-- Task 1 -->
+  <rect x="300" y="220" width="320" height="50" rx="6" fill="#fff" stroke="#93c5fd"/>
+  <text x="460" y="240" text-anchor="middle" font-size="11" font-weight="600" fill="#1e3a8a">1. validar_arquivos_csv</text>
+  <text x="460" y="256" text-anchor="middle" font-size="10" fill="#475569">TaskGroup com 7 FileSensors (poke 30s, timeout 4min)</text>
+
+  <!-- Arrow down -->
+  <line x1="460" y1="270" x2="460" y2="285" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Task 2 -->
+  <rect x="300" y="290" width="320" height="50" rx="6" fill="#fff" stroke="#93c5fd"/>
+  <text x="460" y="310" text-anchor="middle" font-size="11" font-weight="600" fill="#1e3a8a">2. limpar_tabelas_brutas</text>
+  <text x="460" y="326" text-anchor="middle" font-size="10" fill="#475569">SQLExecuteQueryOperator - DROP TABLE (idempotencia)</text>
+
+  <!-- Arrow down -->
+  <line x1="460" y1="340" x2="460" y2="355" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Task 3 -->
+  <rect x="300" y="360" width="320" height="50" rx="6" fill="#fff" stroke="#93c5fd"/>
+  <text x="460" y="380" text-anchor="middle" font-size="11" font-weight="600" fill="#1e3a8a">3. executar_meltano_elt</text>
+  <text x="460" y="396" text-anchor="middle" font-size="10" fill="#475569">BashOperator - meltano run tap-csv target-postgres</text>
+
+  <!-- Resilience note -->
+  <rect x="300" y="425" width="320" height="24" rx="4" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="460" y="441" text-anchor="middle" font-size="10" fill="#1d4ed8">retries: 2 | retry_delay: 5 min</text>
+
+  <!-- Meltano -->
+  <rect x="680" y="160" width="120" height="120" rx="10" fill="url(#meltanoGrad)" stroke="#d97706" stroke-width="1.5"/>
+  <text x="740" y="190" text-anchor="middle" font-size="13" font-weight="700" fill="#92400e">Meltano</text>
+  <text x="740" y="212" text-anchor="middle" font-size="10" fill="#78350f">tap-csv</text>
+  <text x="740" y="230" text-anchor="middle" font-size="18" fill="#92400e">v</text>
+  <text x="740" y="252" text-anchor="middle" font-size="10" fill="#78350f">target-postgres</text>
+
+  <!-- PostgreSQL -->
+  <rect x="680" y="320" width="240" height="140" rx="10" fill="url(#pgGrad)" stroke="#059669" stroke-width="2"/>
+  <text x="800" y="350" text-anchor="middle" font-size="14" font-weight="700" fill="#065f46">PostgreSQL</text>
+  <text x="800" y="370" text-anchor="middle" font-size="11" fill="#047857">Data Warehouse (simulado)</text>
+  <rect x="700" y="385" width="200" height="55" rx="6" fill="#fff" stroke="#6ee7b7"/>
+  <text x="800" y="405" text-anchor="middle" font-size="10" fill="#334155">schema: raw_banvic</text>
+  <text x="800" y="422" text-anchor="middle" font-size="10" fill="#334155">7 tabelas brutas</text>
+  <text x="800" y="439" text-anchor="middle" font-size="9" fill="#64748b">agencias -&gt; clientes -&gt; contas -&gt; ...</text>
+
+  <!-- Arrows: CSV to Airflow -->
+  <line x1="240" y1="310" x2="278" y2="310" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="259" y="302" text-anchor="middle" font-size="9" fill="#64748b">files</text>
+
+  <!-- Arrow: Airflow to Meltano -->
+  <line x1="620" y1="385" x2="678" y2="220" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Arrow: Meltano to PostgreSQL -->
+  <line x1="740" y1="280" x2="740" y2="318" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="755" y="302" font-size="9" fill="#64748b">load</text>
+
+  <!-- Analyst consumption -->
+  <line x1="800" y1="460" x2="800" y2="472" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="720" y="474" width="160" height="24" rx="6" fill="#fff" stroke="#cbd5e1"/>
+  <text x="800" y="490" text-anchor="middle" font-size="10" font-weight="600" fill="#334155">Analistas / BI (consumo futuro)</text>
+</svg>
